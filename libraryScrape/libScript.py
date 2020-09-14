@@ -9,6 +9,7 @@ import re
 import csv
 import pandas as pd
 import xlsxwriter
+from termcolor import colored
 
 # TODO: See if I can parse directly from my account 
 # TODO: error message if book not found
@@ -123,13 +124,15 @@ for i in summaryList:
 
 print("Getting Books:\n")
 if availFlag:
-    print("The Available books at " + selectedLibParsed + " are:\n")
+    tmp = ("The Available books at " + selectedLibParsed + " are:\n")
+    print(colored(tmp, 'red'))
     for i in printListAvail: 
         print(i)
     print("\n")
 else:
     print("None of the books are available at " + selectedLibParsed + " \U0001f97A\n" )
-print("Here is the status of the Unavailable Books:\n")
+tmp = ("Here is the status of the Unavailable Books:\n")
+print(colored(tmp, 'red'))
 for i in printListUnavail: 
     print(i)
 
