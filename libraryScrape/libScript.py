@@ -6,10 +6,8 @@
 from urllib.request import urlopen as uReq
 from bs4 import BeautifulSoup as soup
 import re
-import csv
-import pandas as pd
-import xlsxwriter
 from termcolor import colored
+import sys
 
 # TODO: See if I can parse directly from my account 
 # TODO: error message if book not found
@@ -25,7 +23,10 @@ books = ['https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95357
 
 
 # Library that I want to see
-selectedLib = "sengkang"
+selectedLib = 'sengkang'
+if len(sys.argv) > 1:
+    selectedLib = str(sys.argv[1])
+# print(str(sys.argv[1]))
 selectedLibParsed = selectedLib.capitalize()
 count = 0
 
