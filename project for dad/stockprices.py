@@ -5,28 +5,10 @@ import csv
 import pandas as pd
 import xlsxwriter
 
-def html_stripper(html):
-    x = re.sub('<[^<]+?>', '', str(html)) #gotta coerce to string
-    x = re.sub('\n', ' ', x)
-    x = re.sub( '\s+', ' ', x).strip() #this removes all whitespace and makes single space
-    return(x)
+######################################################### EDIT THIS #########################################################
 
-def get_price(url):
-    uClient = uReq(url)
-    page_html = uClient.read() #stores the content into a variable
-    uClient.close()
-
-    page_soup = soup(page_html, "html.parser")
-
-    stockprice = page_soup.findAll("div",{"id":"sic_stockQuote_companyInfo"})
-    table = html_stripper(stockprice)
-    name = re.search(r'(\[ ).*?(?=\s[A-Z]{2})', table)
-    name = name.group(0)
-    name = name.partition(" ")[2]
-    price = table.partition(': ')[2].partition(' Change:')[0]
-
-    return(name, price)
-
+# change this to the directory that the excel file should be saved to 
+outputDir = 'stocks.xlsx'
 
 stock_urls = ['http://www.shareinvestor.com/fundamental/factsheet.html?counter=A17U.SI', #Ascendas REIT
               'http://www.shareinvestor.com/fundamental/factsheet.html?counter=C31.SI', #Capitaland
@@ -47,6 +29,43 @@ stock_urls = ['http://www.shareinvestor.com/fundamental/factsheet.html?counter=A
               'http://www.shareinvestor.com/fundamental/factsheet.html?counter=J69U.SI', #Frasers Cpt Tr
               'http://www.shareinvestor.com/fundamental/factsheet.html?counter=OV8.SI'] #Sheng Shiong
 
+######################################################### DO NOT EDIT THIS #########################################################
+def html_stripper(html):
+    x = re.sub('<[^<]+?>', '', str(html)) #gotta coerce to string
+    x = re.sub('\n', ' ', x)
+    x = re.sub( '\s+', ' ', x).strip() #this removes all whitespace and makes single space
+    return(x)
+
+def get_price(url):
+    print("Fetching value for " + url)
+    uClient = uReq(url)
+    page_html = uClient.read() #stores the content into a variable
+    uClient.close()
+
+    page_soup = soup(page_html, "html.parser")
+    page_soup
+
+    stockprice = page_soup.findAll("div",{"id":"sic_stockQuote_companyInfo"})
+    table = html_stripper(stockprice)
+    # print(table)
+
+    # use this regex if you want the actual name
+    name = re.search(r'\[ .*?(?= [A-Z]{2}| Quotes)', table)
+    name = name.group(0)
+    name = name.partition(" ")[2]
+    name = re.sub('&amp;', '&', name)
+
+    # # use this regex if you want the counter name 
+    # name = re.search(r'(?<=counter=).*$', url)
+    # name = name.group(0)
+
+    # print(name)
+    price = table.partition(': ')[2].partition(' Change:')[0]
+    price = re.sub(',', '', price) #remove commas from the value if it's more than $1000
+
+    return(name, price)
+
+
 new_list = []
 for i in stock_urls:
     new_list.append(get_price(i))
@@ -54,21 +73,11 @@ for i in stock_urls:
 names, price = zip(*new_list)
 names  = list(names)
 price = list(price)
-price = list(map(float, price))
 
+price = list(map(float, price))
 
 df = pd.DataFrame({'Names': names,'Price':price})
 
-writer = pd.ExcelWriter('Stockprice.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter(outputDir, engine='xlsxwriter')
 df.to_excel(writer, sheet_name='Sheet1')
 writer.save()
-
-
-
-'''
-zipped_list = new_list[:]
-
-with open("stockprices.csv", "w") as output:
-    writer = csv.writer(output, lineterminator='\n')
-    writer.writerows(zipped_list)
-'''
