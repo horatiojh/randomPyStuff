@@ -8,22 +8,84 @@ from bs4 import BeautifulSoup as soup
 import re
 from termcolor import colored
 import sys
+import os 
+import selenium 
+from selenium import webdriver
+import userInfo
+import time
 
 # TODO: See if I can parse directly from my account 
 # TODO: error message if book not found
 
-# write function to try to search book, so that we can always get the URL (is this possible?)
+# new approach: we login to an account and try to get the books from the bookmarked page, 
+# which will circumvent the dynamic URL issue
+
+# begin by importing the username and password from a separate file. I do this so I don't have to keep changing this variable when I push my code changes
+
+driver = webdriver.Chrome()
+driver.get('https://cassamv2.nlb.gov.sg/cas/login')
+
+# select and fill the username
+userIdBox = driver.find_element_by_id('username')
+userIdBox.send_keys(userInfo.username)
+
+# select and fill the password
+passwordBox = driver.find_element_by_id('password')
+passwordBox.send_keys(userInfo.password)
+
+loginButton = driver.find_element_by_name('submit')
+loginButton.click()
+
+# navigate to the bookmarks page
+driver.get('https://www.nlb.gov.sg/mylibrary/Bookmarks')
+
+# get the links and filter/clean them 
+output = driver.find_elements_by_tag_name('a')
+links = []
+
+for item in output:
+    href = item.get_attribute('href')
+    # we only want the urls which contain 'catalogue' and are not duplicates
+    if (("catalogue" in href) and (href not in links)):
+        links.append(href)
+
+newlinks = []
+
+# we need to append the 'SETLVL=1' if not already set
+for item in links:
+    new = item
+    if ("SETLVL" not in item):
+            new = re.sub('BRN', 'SETLVL=1&BRN', item)
+    newlinks.append(new)
+
+print(newlinks)
 
 
-# Library books that i'm interested in
-books = ['https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95357198/246739648',
-'https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95360467/171894760',
-'https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95365926/178142215',
-'https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95370061/312945068']
+books = []
+# for each link, we need to query the page, click on availability and get the loan info
+for link in newlinks:
+    driver.get(link)
+    output = driver.find_element_by_xpath('//a[@role="button"][@data-target="#holdingsDlg"]')
+    bookLink = output.get_attribute('href')
+    print(bookLink)
+    books.append(bookLink)
+
+# output = newlinks[0]
+# driver.get(output)
+# print('blah')
+# # output = driver.find_element_by_class_name('card-text')
+# # output = driver.find_element_by_partial_link_text('View Availability')
+# bookOutput = driver.find_element_by_xpath('//a[@role="button"][@data-target="#holdingsDlg"]')
+# # bookOutput = driver.find_element_by_xpath('//a[@role="button"][@data-toggle="modal"]')
+# bookOutput = driver.find_element_by_xpath('//a[@role="button"][@class="btn btn-primary btn-block mt-3"]')
+# print(bookOutput.get_attribute("href"))
+
+print(books)
+driver.close()
 
 
 # Library that I want to see
-selectedLib = 'sengkang'
+selectedLib = 'central'
 if len(sys.argv) > 1:
     selectedLib = str(sys.argv[1])
 # print(str(sys.argv[1]))
@@ -31,11 +93,8 @@ selectedLibParsed = selectedLib.capitalize()
 count = 0
 
 def html_stripper(html):
-    # remove all special characters first except @
+    # remove all special characters used in html tags
     x = re.sub('<[^<]+?>', '', str(html))  # gotta coerce to string
-    # x = re.sub('\n', ' ', x)
-    # this removes all whitespace and makes single space
-    # x = re.sub('\s+', ' ', x).strip()
     return(x)
 
 # this function, should, given a url, return the book name and status in a tuple
@@ -77,7 +136,7 @@ def get_book(url):
                 if (item[1] == "Available"):
                     count += 1
                 else:
-    # # TODO: if on loan, return earlier loan date 
+    # # TODO: if multiple on loan, return earlier loan date. transit should also take prio over loan
                     tmp = item[1]
 
 
@@ -137,14 +196,14 @@ print(colored(tmp, 'red'))
 for i in printListUnavail: 
     print(i)
 
-# # useful regex 
-# # get lib names
-# re.findall(r'[A-Z][\w\s]* Library', table)
-# # get all statuses 
-# re.findall(r'(Available|Due: [0-9]{2} [A-Za-z]{3} [0-9]{4}),', table)
+# # # useful regex 
+# # # get lib names
+# # re.findall(r'[A-Z][\w\s]* Library', table)
+# # # get all statuses 
+# # re.findall(r'(Available|Due: [0-9]{2} [A-Za-z]{3} [0-9]{4}),', table)
 
-# test cases 
-# get_book('https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95357198/246739648') #works MILKMAN
-# get_book('https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95360467/171894760') #works Stories of your life 
-# get_book('https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95365926/178142215') #works Do Not Say We Have Nothing
-# get_book('https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95370061/312945068') #works Galatea
+# # test cases 
+# # get_book('https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95357198/246739648') #works MILKMAN
+# # get_book('https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95360467/171894760') #works Stories of your life 
+# # get_book('https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95365926/178142215') #works Do Not Say We Have Nothing
+# # get_book('https://catalogue.nlb.gov.sg/cgi-bin/spydus.exe/XHLD/WPAC/BIBENQ/95370061/312945068') #works Galatea
