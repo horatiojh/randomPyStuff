@@ -10,10 +10,10 @@ from termcolor import colored
 import sys
 import os
 import selenium
-import userInfo
 from selenium import webdriver
 import time
 import pandas as pd
+import userInfo
 
 # new approach: we login to an account and try to get the books from the bookmarked page,
 # which will circumvent the dynamic URL issue
@@ -59,23 +59,32 @@ def scrapeAllBookInfo():
     outputDict = {}
     # for each link, we need to query the page, click on availability, get the loan info and save it to a list of dataframes
     for link in links:
-        driver.get(link)
-        time.sleep(1)
-        # get the title of the book
-        title = driver.find_element_by_xpath('//h5[@class="card-title fullTitleh5"]/span').get_attribute('innerHTML')
-        print('Retrieving info for book: ' + title)
-        output = driver.find_element_by_xpath('//a[@role="button"][@data-target="#holdingsDlg"]')
-        driver.execute_script("arguments[0].click();", output)
-        time.sleep(1)
-        # tbl = driver.find_element_by_xpath('//table[@class="table table-stacked"]')
-        tbl = driver.find_element_by_xpath('//table').get_attribute('outerHTML')
-        # print(tbl)
-        df = pd.read_html(tbl)[0]
-        # print(df)
-        outputDict[title] = df
-
+        tmp = getDataFromLink(driver, link)
+        if tmp[0] in outputDict:
+            vals = outputDict.get(tmp[0])
+            newVals = pd.concat([tmp[1], vals])
+            outputDict[tmp[0]] = newVals
+        else:
+            outputDict[tmp[0]] = tmp[1]
     driver.close()
     return(outputDict)
+
+
+def getDataFromLink(driver, lnk):
+    driver.get(lnk)
+    time.sleep(1)
+    # get the title of the book
+    title = driver.find_element_by_xpath('//h5[@class="card-title fullTitleh5"]/span').get_attribute('innerHTML')
+    print('Retrieving info for book: ' + title)
+    output = driver.find_element_by_xpath('//a[@role="button"][@data-target="#holdingsDlg"]')
+    driver.execute_script("arguments[0].click();", output)
+    time.sleep(2)
+    # tbl = driver.find_element_by_xpath('//table[@class="table table-stacked"]')
+    tbl = driver.find_element_by_xpath('//table').get_attribute('outerHTML')
+    # print(tbl)
+    df = pd.read_html(tbl)[0]
+    # print(df)
+    return (title,df)
 
 
 # this function takes in 2 arguments,
@@ -88,21 +97,22 @@ def scrapeAllBookInfo():
 def filterBookInfoByLib(dict, lib):
     outputList = []
     for key in dict:
+        title = key
         df = dict.get(key)
         filteredDf = df[df['Library'].str.contains(lib.capitalize())][["Item Status"]].values.tolist()
-        # flatten the list of lists and add it to the dict
+        # flatten the list of lists and add it to the lst
         flatList = [item for sublist in filteredDf for item in sublist]
         sorted(flatList)
         if len(flatList) == 0:
-            triple = (key, "not available at this library", 0)
+            triple = (title, "not available at this library", 0)
             outputList.append(triple)
         else:
             count = flatList.count("Available")
             if count == 0:
-                triple = (key, flatList[0], 0)
+                triple = (title, flatList[0], 0)
                 outputList.append(triple)
             else:
-                triple = (key, "Available", count)
+                triple = (title, "Available", count)
                 outputList.append(triple)
     return outputList
 
