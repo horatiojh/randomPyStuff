@@ -12,3 +12,8 @@ how automation would work if we needed to access several pages (especially if it
 ### Scraping project
 This is a script that searches the ShareInvestor website based on a bunch of URLS and pulls the stock name and price, then exports it to an excel file. I wrote this to better understand 
 how to scrape websites using BeautifulSoup. This taught me how to work with HTML code and filter out what I needed using regex.
+
+### Credit Card Statement Checker
+This was a script written to quickly count the total sum of my credit and debit transactions in my SC Spree Credit Card statement, so that I could check that the billed amount is accurate. It takes the downloadable CSV statement from the SC Banking website as an input, and returns a bunch of print statements which check that the value is correct. 
+
+A possible extension of this project is to calculate the eligible cashback on my transactions to ensure that it corroborates with the actual cashback that I'm receiving from SC.

@@ -1,2 +1,4 @@
 *.pyc
 *.idea
+**/resources
+**/userInfo.py
