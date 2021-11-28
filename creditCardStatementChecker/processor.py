@@ -5,8 +5,8 @@ from termcolor import colored
 
 ########################################## EDIT THIS PART #######################################
 
-csv = '/Users/horatio/Coding/pyScripts/creditCardStatementChecker/resources/transactions1908.csv'
-month = 8 # calculates August's statement, from 16 Jul to 15 Aug
+csv = '/Users/horatio/Coding/pyScripts/creditCardStatementChecker/resources/transactions1810.csv'
+month = 10 # calculates August's statement, from 16 Jul to 15 Aug
 maxCashback = 30 # monthly max cashback is $30
 
 ###################################### DO NOT EDIT THIS PART #######################################

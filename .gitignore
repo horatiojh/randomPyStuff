@@ -2,3 +2,4 @@
 *.idea
 **/resources
 **/userInfo.py
+**/scratch.py

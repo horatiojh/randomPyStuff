@@ -9,8 +9,8 @@ import re
 from termcolor import colored
 import sys
 import os
-import selenium
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pandas as pd
 import userInfo
@@ -45,7 +45,7 @@ def getDataFromLink(driver, lnk):
 # and the value is a list of statuses
 
 def scrapeAllBookInfo():
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(ChromeDriverManager(version="93.0.4577.63").install())
     driver.get('https://cassamv2.nlb.gov.sg/cas/login')
 
     # begin by importing the username and password from a separate file. I do this so I don't have to keep changing this variable when I push my code changes
