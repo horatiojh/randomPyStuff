@@ -17,3 +17,6 @@ how to scrape websites using BeautifulSoup. This taught me how to work with HTML
 This was a script written to quickly count the total sum of my credit and debit transactions in my SC Spree Credit Card statement, so that I could check that the billed amount is accurate. It takes the downloadable CSV statement from the SC Banking website as an input, and returns a bunch of print statements which check that the value is correct. 
 
 A possible extension of this project is to calculate the eligible cashback on my transactions to ensure that it corroborates with the actual cashback that I'm receiving from SC.
+
+### DPC Schedule Scraper
+A scraper to get the games being played each week in the Dota Pro Circuit (DPC), so that I don't have to manually monitor the games that I want to watch anymore. Built over [`liquipediapy`](https://github.com/c00kie17/liquipediapy), thanks `c00kie17`! Still very much in beta, there are a number of changes still to be made!
