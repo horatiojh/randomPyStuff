@@ -1,11 +1,16 @@
 import re
+import time
 from datetime import datetime, timedelta
-from liquipediapy import liquipediapy, dota
+from liquipediapy import liquipediapy
+import requests
+import requests_cache
 
 
 # setup (token and stuff)
-scriptName = "dpcSchedulerNew (horatiohotness@gmail.com)"
+scriptName = "dpcScheduleCompiler (horatiohotness@gmail.com)"
 liquipy_object = liquipediapy(scriptName, 'dota2')
+requests_cache.install_cache(cache_name='scheduleCache', backend='sqlite', expire_after=6000)
+
 
 def generate_div1_pages(regionList):
 	pages = []
@@ -96,6 +101,9 @@ def createCompleteSchedule(urlList):
                 output[week] = currVals + tmp[week]
             else:
                 output[week] = tmp[week]
+        
+        # set rate limiting to abide by API regulations (30 sec per parse call)
+        time.sleep(30)
 
     # sort the lists
     for week in output:

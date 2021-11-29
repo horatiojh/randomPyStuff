@@ -8,7 +8,7 @@ week = 1
 
 # filter teams we want to see
 div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NAVI', 'VP', 'TSpirit', 'EG', 'UND', 'QC', 'BOOM', 'Fnatic', 'TNC', 'MG.Trust', 'OB.Neon', 'T1']
-div2Teams = ['Talon', 'Bald', 'CIS Rejects', 'Xtreme']
+div2Teams = ['Talon', 'Xtreme', 'Bald', 'CIS Rejects', 'NGX.SEA']
 
 # pages with dpc schedule
 regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_America','South_America']
@@ -31,3 +31,5 @@ getWeeklySchedule(schedule, week, teams)
 # TODO: Parse date back nicely 
 
 # TODO: Add fixture if it's top of table teams (ranking-based)
+
+# TODO: Use own API calls to have more control over query time/caching 
