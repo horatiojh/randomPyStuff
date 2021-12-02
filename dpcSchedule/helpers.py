@@ -26,42 +26,42 @@ def generate_div2_pages(regionList):
 	return pages
 
 def html_stripper(html):
-    x = re.sub('<[^<]+?>', '', str(html)) #gotta coerce to string
-    x = re.sub('\n', ' ', x)
-    x = re.sub( '\s+', ' ', x).strip() #this removes all whitespace and makes single space
-    return(x)
+	x = re.sub('<[^<]+?>', '', str(html)) #gotta coerce to string
+	x = re.sub('\n', ' ', x)
+	x = re.sub( '\s+', ' ', x).strip() #this removes all whitespace and makes single space
+	return(x)
 
 # takes in soup object representing the raw scrape of a week's schedule, returns a list of strings where each string is a match
 # sample output: 'December 1, 2021 - 16:00: TNC v T1 (SEA/Div1)'
 def getScheduleFromBSObject(soupObj, region, div):
 
-    # get the week it is
-    week = re.search(r'Week [0-9]', str(soupObj)).group(0)
+	# get the week it is
+	week = re.search(r'Week [0-9]', str(soupObj)).group(0)
 
-    # sort the teams out
-    tmp = soupObj.findAll("td", {"class":"matchlistslot"})
-    teamRaw = html_stripper(tmp)
-    teams = teamRaw.replace('[', '').replace(']', '').replace(' ', '').split(',')
+	# sort the teams out
+	tmp = soupObj.findAll("td", {"class":"matchlistslot"})
+	teamRaw = html_stripper(tmp)
+	teams = teamRaw.replace('[', '').replace(']', '').replace(' ', '').split(',')
 	# edit Alliance since they're saved as [A]
-    if (region == 'EU' and 'A' in teams):
-	    teams = [team.replace('A', 'Alliance') for team in teams]
+	if (region == 'EU' and 'A' in teams):
+		teams = [team.replace('A', 'Alliance') for team in teams]
 
-    si = iter(teams)
-    matchList = [c+' v '+ next(si, '') + ' (' + region + '/' + div + ')' for c in si]
+	si = iter(teams)
+	matchList = [c+' v '+ next(si, '') + ' (' + region + '/' + div + ')' for c in si]
 
-    # sort the dates out
-    dateList = re.findall(r'[A-Z][a-z]* [0-9][0-9]?, [0-9]{4} - [0-9]{2}:[0-9]{2}', str(soupObj))
+	# sort the dates out
+	dateList = re.findall(r'[A-Z][a-z]* [0-9][0-9]?, [0-9]{4} - [0-9]{2}:[0-9]{2}', str(soupObj))
 
-    # convert timezone if necessary
-    updatedDateList = []
-    for date in dateList:
-        updatedDateList.append(convertDateTime(date, region))
+	# convert timezone if necessary
+	updatedDateList = []
+	for date in dateList:
+		updatedDateList.append(convertDateTime(date, region))
 
-    # return list(zip(dateList, matchList))
-    outputList = [': '.join(z) for z in zip(updatedDateList, matchList)]
+	# return list(zip(dateList, matchList))
+	outputList = [': '.join(z) for z in zip(updatedDateList, matchList)]
 
-    # return the week and the schedule
-    return (week, outputList)
+	# return the week and the schedule
+	return (week, outputList)
 
 
 # generate a map of string lists, with each week as the key and the map as its value
@@ -70,62 +70,63 @@ def getScheduleFromBSObject(soupObj, region, div):
 # @cached(cache)
 def createCompleteScheduleForAUrl(inputUrl):
 
-    print("Getting schedule from the following URL: " + inputUrl)
-    region = re.search(r'/1/(.*)/Di', inputUrl).group(1)
-    region = convertRegion(region)
-    print('Region: ' + region)
-    div = re.search(r'Division.*', inputUrl).group(0)
-    div = convertDiv(div)
-    print('Division: ' + div)
+	print("Getting schedule from the following URL: " + inputUrl)
+	region = re.search(r'/1/(.*)/Di', inputUrl).group(1)
+	region = convertRegion(region)
+	print('Region: ' + region)
+	div = re.search(r'Division.*', inputUrl).group(0)
+	div = convertDiv(div)
+	print('Division: ' + div + "\n")
 
-    output = {}
-    soup,url,cached = parse(inputUrl)
-    schedule = soup.findAll("table",{"class":"matchlist wikitable table table-bordered collapsible"})
+	output = {}
+	soup,url,cached = parse(inputUrl)
+	schedule = soup.findAll("table",{"class":"matchlist wikitable table table-bordered collapsible"})
 
-    for week in schedule:
-        weeklySchedule = getScheduleFromBSObject(week, region, div)
-        output[weeklySchedule[0]] = weeklySchedule[1]
+	for week in schedule:
+		weeklySchedule = getScheduleFromBSObject(week, region, div)
+		output[weeklySchedule[0]] = weeklySchedule[1]
 
-    return output, cached
+	return output, cached
 
 # now we do it for all regions, then we combine the maps to get one list for each week
 def createCompleteSchedule(urlList):
-    output = {}
+	output = {}
 
-    # collect individual schedules
-    for url in urlList:
-        tmp, isCached = createCompleteScheduleForAUrl(url)
+	# collect individual schedules
+	for url in urlList:
+		tmp, isCached = createCompleteScheduleForAUrl(url)
 
-        # add values to dict
-        for week in tmp:
-            if week in output:
-                currVals = output[week] #list
-                output[week] = currVals + tmp[week]
-            else:
-                output[week] = tmp[week]
-        
-        # set rate limiting to abide by API regulations (30 sec per parse call) if response was not from cache
-        if not isCached:
-            print("Value not previously cached, sleeping for 30s to abide by rate limiting...")
-            time.sleep(30)
+		# add values to dict
+		for week in tmp:
+			if week in output:
+				currVals = output[week] #list
+				output[week] = currVals + tmp[week]
+			else:
+				output[week] = tmp[week]
+		
+		# set rate limiting to abide by API regulations (30 sec per parse call) if response was not from cache
+		if not isCached:
+			print("Value not previously cached, sleeping for 30s to abide by rate limiting...")
+			time.sleep(30)
 
-    # sort the lists
-    for week in output:
-        output[week].sort()
-        # format the date 
-        tmp = output[week]
-        newList = []
-        for item in tmp:
-            newString = convertDateTimeBackToNiceFormat(item)
-            newList.append(newString)  
-        output[week] = newList
+	# sort the lists
+	for week in output:
+		output[week].sort()
+		# format the date 
+		tmp = output[week]
+		newList = []
+		for item in tmp:
+			newString = convertDateTimeBackToNiceFormat(item)
+			newList.append(newString)  
+		output[week] = newList
 
-    return output
+	return output
 
 def getWeeklySchedule(map, wkNumber, teams):
 	week = "Week " + str(wkNumber)
 	output = map[week]
-
+	print("DPC Schedule: " + week)
+	
 	# if teams is empty means we want all matches
 	if not teams:
 		for item in output:
@@ -135,90 +136,95 @@ def getWeeklySchedule(map, wkNumber, teams):
 	# else match against the list provided
 	else:
 		filteredList = []
+		date = ""
 		for item in output:
 			if any(team in item for team in teams):
 				filteredList.append(item)
+				tmp = ""
+				if (item[:2] != date):
+					print() # create newline so dates are split
+					date = item[:2]
 				print(item)
 		return filteredList
 
 def convertDateTime(dateString, region):
-    timeToAdd = calculateRegionTimeDiff(region)
-    format = '%B %d, %Y - %H:%M'
-    tmp = datetime.strptime(dateString, format)
-    newTime = tmp + timedelta(hours=timeToAdd)
-    return newTime.strftime('%Y/%m/%d %H:%M')
+	timeToAdd = calculateRegionTimeDiff(region)
+	format = '%B %d, %Y - %H:%M'
+	tmp = datetime.strptime(dateString, format)
+	newTime = tmp + timedelta(hours=timeToAdd)
+	return newTime.strftime('%Y/%m/%d %H:%M')
 
 def convertDateTimeBackToNiceFormat(dateString):
-    tmp = str.split(dateString, ": ")
-    date = tmp[0]
-    game = tmp[1]
-    format = ('%Y/%m/%d %H:%M')
-    date = datetime.strptime(date, format)
-    newDate = date.strftime('%d %b %H:%M')
-    return newDate + ": " + game
+	tmp = str.split(dateString, ": ")
+	date = tmp[0]
+	game = tmp[1]
+	format = ('%Y/%m/%d %H:%M')
+	date = datetime.strptime(date, format)
+	newDate = date.strftime('%a %d %b %H:%M')
+	return newDate + ": " + game
 
 def calculateRegionTimeDiff(region):
-    if region == "SEA":
-        return 0
-    if region == "CN":
-        return 0
-    if region == "EU":
-        return 7
-    if region == "CIS":
-        return 7
-    if region == "NA":
-        return 16
-    if region == "SA":
-        return 16
+	if region == "SEA":
+		return 0
+	if region == "CN":
+		return 0
+	if region == "EU":
+		return 7
+	if region == "CIS":
+		return 7
+	if region == "NA":
+		return 16
+	if region == "SA":
+		return 16
 
 def html_stripper(html):
-    x = re.sub('<[^<]+?>', '', str(html)) #gotta coerce to string
-    x = re.sub('\n', ' ', x)
-    x = re.sub( '\s+', ' ', x).strip() #this removes all whitespace and makes single space
-    return(x)
+	x = re.sub('<[^<]+?>', '', str(html)) #gotta coerce to string
+	x = re.sub('\n', ' ', x)
+	x = re.sub( '\s+', ' ', x).strip() #this removes all whitespace and makes single space
+	return(x)
 
 def convertRegion(region):
-    if region == 'Southeast_Asia':
-        return 'SEA'
-    if region == 'China':
-        return 'CN'
-    if region == 'Western_Europe':
-        return 'EU'
-    if region == 'Eastern_Europe':
-        return 'CIS'
-    if region == 'North_America':
-        return 'NA'
-    if region == 'South_America':
-        return 'SA'
-    return ("Region not found for " + region)
+	if region == 'Southeast_Asia':
+		return 'SEA'
+	if region == 'China':
+		return 'CN'
+	if region == 'Western_Europe':
+		return 'EU'
+	if region == 'Eastern_Europe':
+		return 'CIS'
+	if region == 'North_America':
+		return 'NA'
+	if region == 'South_America':
+		return 'SA'
+	return ("Region not found for " + region)
 
 def convertDiv(div):
-    if (div == "Division_I"):
-        return "Div1"
-    else:
-        return "Div2"
+	if (div == "Division_I"):
+		return "Div1"
+	else:
+		return "Div2"
 
 # adapted from https://github.com/c00kie17/liquipediapy and his parsing, thanks mate! Added a caching mechanism and
 # function also returns a bool that states whether the cache was used, to know if we need to implement the 30s sleep
 # in the next function, to abide by Liquipedia's terms of use wrt rate limiting.
 def parse(page):
-    url = 'https://liquipedia.net/dota2/api.php?action=parse&format=json&page='+page
-    response = requests.get(url, headers=headers)
-    isCached = response.from_cache
+	url = 'https://liquipedia.net/dota2/api.php?action=parse&format=json&page='+page
+	response = requests.get(url, headers=headers)
+	isCached = response.from_cache
 
-    if response.status_code == 200:
-        try:
-            page_html = response.json()['parse']['text']['*']
-        except KeyError:
-            raise Exception(response.json(),response.status_code)	
-        soup = BeautifulSoup(page_html,features="lxml")
-        redirect = soup.find('ul',class_="redirectText")
-        if redirect is None:
-            return soup,None,isCached
-        else:
-            redirect_value = soup.find('a').get_text()
-            redirect_value = quote(redirect_value)
-            soup,__ = parse(redirect_value)
-            return soup,redirect_value,isCached
-    else:
-        raise Exception(response.json(),response.status_code)
+	if response.status_code == 200:
+		try:
+			page_html = response.json()['parse']['text']['*']
+		except KeyError:
+			raise Exception(response.json(),response.status_code)	
+		soup = BeautifulSoup(page_html,features="lxml")
+		redirect = soup.find('ul',class_="redirectText")
+		if redirect is None:
+			return soup,None,isCached
+		else:
+			redirect_value = soup.find('a').get_text()
+			redirect_value = quote(redirect_value)
+			soup,__ = parse(redirect_value)
+			return soup,redirect_value,isCached
+	else:
+		raise Exception(response.json(),response.status_code)
