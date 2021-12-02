@@ -1,6 +1,3 @@
-from liquipediapy import liquipediapy, dota
-import requests
-import re
 from helpers import *
 
 # Which week do we want to generate the schedule for 

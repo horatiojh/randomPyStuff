@@ -1,14 +1,7 @@
-from liquipediapy import liquipediapy, dota
-import requests
-import re
 from helpers import *
 
-
-
 # TODO: China schedule is on different timing, can figure how to do that 
-
 # TODO: Refactor code so that if weekly schedule is wanted, it only fetches that week rather than everything 
-
 # TODO: Add fixture if it's top of table teams (ranking-based)
 
 # Which week do we want to generate the schedule for 

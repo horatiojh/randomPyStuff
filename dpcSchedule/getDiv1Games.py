@@ -1,7 +1,3 @@
-from liquipediapy import liquipediapy, dota
-import requests
-import requests_cache
-import re
 from helpers import *
 
 # setup cache
