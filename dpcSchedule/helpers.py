@@ -1,15 +1,14 @@
 import re
 import time
 from datetime import datetime, timedelta
-from liquipediapy import liquipediapy
-# from cachetools import cached, TTLCache
 import requests
 import requests_cache
-
+from bs4 import BeautifulSoup
+from urllib.request import quote
 
 # setup (token and stuff)
 scriptName = "dpcScheduleCompiler (horatiohotness@gmail.com)"
-liquipy_object = liquipediapy(scriptName, 'dota2')
+headers = {'User-Agent': scriptName,'Accept-Encoding': 'gzip'}
 requests_cache.install_cache(cache_name='scheduleCache', backend='sqlite', expire_after=6000)
 
 def generate_div1_pages(regionList):
@@ -80,14 +79,14 @@ def createCompleteScheduleForAUrl(inputUrl):
     print('Division: ' + div)
 
     output = {}
-    soup,url = liquipy_object.parse(inputUrl)
+    soup,url,cached = parse(inputUrl)
     schedule = soup.findAll("table",{"class":"matchlist wikitable table table-bordered collapsible"})
 
     for week in schedule:
         weeklySchedule = getScheduleFromBSObject(week, region, div)
         output[weeklySchedule[0]] = weeklySchedule[1]
 
-    return output
+    return output, cached
 
 # now we do it for all regions, then we combine the maps to get one list for each week
 def createCompleteSchedule(urlList):
@@ -95,7 +94,7 @@ def createCompleteSchedule(urlList):
 
     # collect individual schedules
     for url in urlList:
-        tmp = createCompleteScheduleForAUrl(url)
+        tmp, isCached = createCompleteScheduleForAUrl(url)
 
         # add values to dict
         for week in tmp:
@@ -105,8 +104,10 @@ def createCompleteSchedule(urlList):
             else:
                 output[week] = tmp[week]
         
-        # set rate limiting to abide by API regulations (30 sec per parse call)
-        # time.sleep(30)
+        # set rate limiting to abide by API regulations (30 sec per parse call) if response was not from cache
+        if not isCached:
+            print("Value not previously cached, sleeping for 30s to abide by rate limiting...")
+            time.sleep(30)
 
     # sort the lists
     for week in output:
@@ -118,7 +119,6 @@ def createCompleteSchedule(urlList):
             newString = convertDateTimeBackToNiceFormat(item)
             newList.append(newString)  
         output[week] = newList
-
 
     return output
 
@@ -197,3 +197,28 @@ def convertDiv(div):
         return "Div1"
     else:
         return "Div2"
+
+# adapted from https://github.com/c00kie17/liquipediapy and his parsing, thanks mate! Added a caching mechanism and
+# function also returns a bool that states whether the cache was used, to know if we need to implement the 30s sleep
+# in the next function, to abide by Liquipedia's terms of use wrt rate limiting.
+def parse(page):
+    url = 'https://liquipedia.net/dota2/api.php?action=parse&format=json&page='+page
+    response = requests.get(url, headers=headers)
+    isCached = response.from_cache
+
+    if response.status_code == 200:
+        try:
+            page_html = response.json()['parse']['text']['*']
+        except KeyError:
+            raise Exception(response.json(),response.status_code)	
+        soup = BeautifulSoup(page_html,features="lxml")
+        redirect = soup.find('ul',class_="redirectText")
+        if redirect is None:
+            return soup,None,isCached
+        else:
+            redirect_value = soup.find('a').get_text()
+            redirect_value = quote(redirect_value)
+            soup,__ = parse(redirect_value)
+            return soup,redirect_value,isCached
+    else:
+        raise Exception(response.json(),response.status_code)

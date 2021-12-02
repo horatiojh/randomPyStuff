@@ -3,6 +3,14 @@ import requests
 import re
 from helpers import *
 
+
+
+# TODO: China schedule is on different timing, can figure how to do that 
+
+# TODO: Refactor code so that if weekly schedule is wanted, it only fetches that week rather than everything 
+
+# TODO: Add fixture if it's top of table teams (ranking-based)
+
 # Which week do we want to generate the schedule for 
 week = 1
 
@@ -22,14 +30,3 @@ teams = div1Teams + div2Teams
 schedule = createCompleteSchedule(urlList)
 getWeeklySchedule(schedule, week, teams)
 
-
-
-# TODO: China schedule is on different timing, can figure how to do that 
-
-# TODO: Refactor code so that if weekly schedule is wanted, it only fetches that week rather than everything 
-
-# TODO: Parse date back nicely 
-
-# TODO: Add fixture if it's top of table teams (ranking-based)
-
-# TODO: Use own API calls to have more control over query time/caching 
