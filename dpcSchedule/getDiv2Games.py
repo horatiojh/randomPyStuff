@@ -7,7 +7,7 @@ from helpers import *
 week = 1
 
 # filter teams we want to see
-div2Teams = ['Talon', 'Xtreme', 'Bald', 'CIS Rejects', 'NGX.SEA']
+div2Teams = ['Talon', 'Xtreme', 'Bald', 'CIS-R', 'NGX.SEA']
 
 # pages with dpc schedule
 regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_America','South_America']
@@ -16,4 +16,3 @@ regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_Ame
 urlListDiv2 = generate_div2_pages(regions)
 
 schedule = createCompleteSchedule(urlListDiv2)
-getWeeklySchedule(schedule, week, div2Teams)

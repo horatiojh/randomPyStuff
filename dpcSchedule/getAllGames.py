@@ -7,8 +7,8 @@ from helpers import *
 week = 1
 
 # filter teams we want to see
-div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NAVI', 'VP', 'TSpirit', 'EG', 'UND', 'QC', 'BOOM', 'Fnatic', 'TNC', 'MG.Trust', 'OB.Neon', 'T1']
-div2Teams = ['Talon', 'Xtreme', 'Bald', 'CIS Rejects', 'NGX.SEA']
+div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NGX', 'NAVI', 'VP', 'TSpirit', 'EG', 'UND', 'QC', 'BOOM', 'Fnatic', 'TNC', 'MG.Trust', 'OB.Neon', 'T1']
+div2Teams = ['Talon', 'Xtreme', 'Bald', 'CIS-R', 'NGX.SEA']
 
 # pages with dpc schedule
 regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_America','South_America']

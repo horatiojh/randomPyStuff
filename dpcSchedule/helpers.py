@@ -2,6 +2,7 @@ import re
 import time
 from datetime import datetime, timedelta
 from liquipediapy import liquipediapy
+# from cachetools import cached, TTLCache
 import requests
 import requests_cache
 
@@ -10,7 +11,6 @@ import requests_cache
 scriptName = "dpcScheduleCompiler (horatiohotness@gmail.com)"
 liquipy_object = liquipediapy(scriptName, 'dota2')
 requests_cache.install_cache(cache_name='scheduleCache', backend='sqlite', expire_after=6000)
-
 
 def generate_div1_pages(regionList):
 	pages = []
@@ -66,6 +66,9 @@ def getScheduleFromBSObject(soupObj, region, div):
 
 
 # generate a map of string lists, with each week as the key and the map as its value
+
+# cache = TTLCache(maxsize=100, ttl=86400)
+# @cached(cache)
 def createCompleteScheduleForAUrl(inputUrl):
 
     print("Getting schedule from the following URL: " + inputUrl)
@@ -103,15 +106,22 @@ def createCompleteSchedule(urlList):
                 output[week] = tmp[week]
         
         # set rate limiting to abide by API regulations (30 sec per parse call)
-        time.sleep(30)
+        # time.sleep(30)
 
     # sort the lists
     for week in output:
         output[week].sort()
+        # format the date 
+        tmp = output[week]
+        newList = []
+        for item in tmp:
+            newString = convertDateTimeBackToNiceFormat(item)
+            newList.append(newString)  
+        output[week] = newList
+
 
     return output
 
-# takes in 
 def getWeeklySchedule(map, wkNumber, teams):
 	week = "Week " + str(wkNumber)
 	output = map[week]
@@ -131,16 +141,21 @@ def getWeeklySchedule(map, wkNumber, teams):
 				print(item)
 		return filteredList
 
-
-
-
-
 def convertDateTime(dateString, region):
     timeToAdd = calculateRegionTimeDiff(region)
     format = '%B %d, %Y - %H:%M'
     tmp = datetime.strptime(dateString, format)
     newTime = tmp + timedelta(hours=timeToAdd)
     return newTime.strftime('%Y/%m/%d %H:%M')
+
+def convertDateTimeBackToNiceFormat(dateString):
+    tmp = str.split(dateString, ": ")
+    date = tmp[0]
+    game = tmp[1]
+    format = ('%Y/%m/%d %H:%M')
+    date = datetime.strptime(date, format)
+    newDate = date.strftime('%d %b %H:%M')
+    return newDate + ": " + game
 
 def calculateRegionTimeDiff(region):
     if region == "SEA":
