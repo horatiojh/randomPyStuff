@@ -1,27 +1,27 @@
 import pandas as pd
-import xlsxwriter
 import calendar
 from termcolor import colored
 
 ########################################## EDIT THIS PART #######################################
 
-csv = '/Users/horatio/Coding/pyScripts/creditCardStatementChecker/resources/transactions1810.csv'
-month = 10 # calculates August's statement, from 16 Jul to 15 Aug
+csv = '/Users/horatio/Coding/pyScripts/creditCardStatementChecker/resources/1812.csv'
+month = 12 # calculates that month's statement, from 16 of prev month to 15 of that month
+year = 2022
 maxCashback = 30 # monthly max cashback is $30
 
 ###################################### DO NOT EDIT THIS PART #######################################
 
 def getStartDate(month):
     if month < 11:
-        output = '16/0' +str(month-1) + '/2021'
+        output = '16/0' + str(month-1) + '/' + str(year)
         return output
-    return ('16/' + str(month-1) + '/2021')
+    return ('16/' + str(month-1) + '/' + str(year))
 
 def getEndDate(month):
     if month < 10:
-        output = '15/0' +str(month) + '/2021'
+        output = '15/0' +str(month) + '/' + str(year)
         return output
-    return ('15/' + str(month) + '/2021')
+    return ('15/' + str(month) + '/' + str(year))
 
 start = getStartDate(month)
 end = getEndDate(month)
@@ -106,7 +106,7 @@ else:
 
 print("The cashback amount I should have gotten (assuming 2% on everything) is: $" + str(cashbackAmt))
 print("The actual cashback received is: $" + str(cashbackReceived))
-if owedAmt != amtDue:
+if cashbackAmt != cashbackReceived:
     print(colored("The cashback does not tally", 'red'))
     print("The cashback is less by $" + str(round(cashbackAmt-cashbackReceived,2)))
 else:
