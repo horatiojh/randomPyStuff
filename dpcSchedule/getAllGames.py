@@ -1,14 +1,14 @@
 from helpers import *
 
-# TODO: China schedule is on different timing, can figure how to do that 
+# TODO: China schedule is on different timing, can figure how to do that -> can filter by date instead? 
 # TODO: Refactor code so that if weekly schedule is wanted, it only fetches that week rather than everything 
 # TODO: Add fixture if it's top of table teams (ranking-based)
 
 # Which week do we want to generate the schedule for 
-week = 1
+week = 4
 
 # filter teams we want to see
-div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NGX', 'NAVI', 'VP', 'TSpirit', 'EG', 'UND', 'QC', 'BOOM', 'Fnatic', 'TNC', 'MG.Trust', 'OB.Neon', 'T1']
+div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NGX', 'VP', 'TSpirit', 'EG', 'UND', 'QC', 'BOOM', 'TNC', 'MG.Trust', 'T1']
 div2Teams = ['Talon', 'Xtreme', 'Bald', 'CIS-R', 'NGX.SEA']
 
 # pages with dpc schedule
