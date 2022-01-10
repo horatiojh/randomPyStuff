@@ -56,18 +56,19 @@ def getScheduleFromBSObject(soupObj, region, div):
 	updatedDateList = []
 	for date in dateList:
 		updatedDateList.append(convertDateTime(date, region))
+		# print(date)
 
 	# return list(zip(dateList, matchList))
 	outputList = [': '.join(z) for z in zip(updatedDateList, matchList)]
 
 	# return the week and the schedule
+	# print(week)
+	# print(outputList[0])
 	return (week, outputList)
 
 
 # generate a map of string lists, with each week as the key and the map as its value
 
-# cache = TTLCache(maxsize=100, ttl=86400)
-# @cached(cache)
 def createCompleteScheduleForAUrl(inputUrl):
 
 	print("Getting schedule from the following URL: " + inputUrl)
@@ -125,12 +126,12 @@ def createCompleteSchedule(urlList):
 def getWeeklySchedule(map, wkNumber, teams):
 	week = "Week " + str(wkNumber)
 	output = map[week]
-	print("DPC Schedule: " + week)
+	# print("DPC Schedule: " + week)
 	
 	# if teams is empty means we want all matches
 	if not teams:
-		for item in output:
-			print(item)
+		# for item in output:
+			# print(item)
 		return output
 	
 	# else match against the list provided
@@ -142,10 +143,27 @@ def getWeeklySchedule(map, wkNumber, teams):
 				filteredList.append(item)
 				tmp = ""
 				if (item[:2] != date):
-					print() # create newline so dates are split
+					# print() # create newline so dates are split
 					date = item[:2]
-				print(item)
+				# print(item)
 		return filteredList
+
+def printScheduleToTerminal(scheduleList, week, shouldSort):
+	week = "Week " + str(week)
+	print("DPC Schedule: " + week)
+	if shouldSort:
+		# sort by Day, then by Time ie. "Mon 10 Jan 13:00: ..." will sort by '10' then '13:00'
+		# easiest way to do it without having to reformat strings back to dates, but will cause problems if games over 2 months are scheduled
+		# TODO: format/sort by date
+		scheduleList.sort(key=lambda x: (x.split(' ')[1], x.split(' ')[3]))
+	date = ""
+	for item in scheduleList:
+		if (item[:2] != date):
+			print() # create newline so dates are split
+			date = item[:2]
+		print(item)
+
+
 
 def convertDateTime(dateString, region):
 	timeToAdd = calculateRegionTimeDiff(region)

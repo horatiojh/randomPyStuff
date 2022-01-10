@@ -7,7 +7,7 @@ from helpers import *
 week = 1
 
 # filter teams we want to see
-div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NGX', 'NAVI', 'VP', 'TSpirit', 'EG', 'UND', 'QC', 'BOOM', 'Fnatic', 'TNC', 'MG.Trust', 'OB.Neon', 'T1']
+div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NGX', 'VP', 'TSpirit', 'EG', 'UND', 'QC', 'BOOM', 'TNC', 'MG.Trust', 'T1', 'IG', 'PSG.LGD', 'Aster', 'RNG', 'EHOME']
 
 # pages with dpc schedule
 regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_America','South_America']
@@ -16,6 +16,5 @@ regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_Ame
 urlListDiv1 = generate_div1_pages(regions)
 
 schedule = createCompleteSchedule(urlListDiv1)
-# schedule = createCompleteSchedule(['Dota_Pro_Circuit/2021-22/1/China/Division_I'])
-
-getWeeklySchedule(schedule, week, div1Teams)
+finalSchedule = getWeeklySchedule(schedule, week, div1Teams)
+printScheduleToTerminal(finalSchedule)

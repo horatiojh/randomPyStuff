@@ -1,3 +1,4 @@
+from re import T
 from helpers import *
 
 # TODO: China schedule is on different timing, can figure how to do that -> can filter by date instead? 
@@ -5,11 +6,11 @@ from helpers import *
 # TODO: Add fixture if it's top of table teams (ranking-based)
 
 # Which week do we want to generate the schedule for 
-week = 4
+week = 5
 
 # filter teams we want to see
-div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NGX', 'VP', 'TSpirit', 'EG', 'UND', 'QC', 'BOOM', 'TNC', 'MG.Trust', 'T1']
-div2Teams = ['Talon', 'Xtreme', 'Bald', 'CIS-R', 'NGX.SEA']
+div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NGX', 'VP', 'TSpirit', 'HR', 'EG', 'UND', 'QC', 'BOOM', 'Fnatic', 'MG.Trust', 'T1', 'SMG', 'IG', 'PSG.LGD', 'Aster', 'RNG', 'EHOME']
+div2Teams = ['Xtreme', 'Bald', 'CF', 'CIS-R', 'NGX.SEA', 'Ragdoll', 'Polaris']
 
 # pages with dpc schedule
 regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_America','South_America']
@@ -21,5 +22,15 @@ urlList = urlListDiv1 + urlListDiv2
 teams = div1Teams + div2Teams
 
 schedule = createCompleteSchedule(urlList)
-getWeeklySchedule(schedule, week, teams)
+nonCNSchedule = getWeeklySchedule(schedule, week, teams)
+
+# for the chinese ones (now that the schedule is not balanced; it's 3 weeks behind)
+div1CNTeams = ['IG', 'PSG.LGD', 'Aster', 'RNG', 'EHOME']
+cnWeek = week - 3
+cnSchedule = getWeeklySchedule(schedule, cnWeek, div1CNTeams)
+totalSchedule = nonCNSchedule + cnSchedule
+
+printScheduleToTerminal(totalSchedule, week, True)
+
+
 
