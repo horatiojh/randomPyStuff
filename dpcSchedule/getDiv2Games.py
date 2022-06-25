@@ -11,5 +11,6 @@ regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_Ame
 
 # main code
 urlListDiv2 = generate_div2_pages(regions)
-
 schedule = createCompleteSchedule(urlListDiv2)
+finalSchedule = getWeeklySchedule(schedule, week, div2Teams)
+printScheduleToTerminal(finalSchedule)
