@@ -11,18 +11,16 @@ scriptName = "dpcScheduleCompiler (horatiohotness@gmail.com)"
 headers = {'User-Agent': scriptName,'Accept-Encoding': 'gzip'}
 requests_cache.install_cache(cache_name='scheduleCache', backend='sqlite', expire_after=6000)
 
-def generate_div1_pages(regionList):
+def generate_pages(division, regionList, season):
 	pages = []
+	season = str(season)
 	for region in regionList:
-		tmp = 'Dota_Pro_Circuit/2021-22/1/' + region + '/Division_I'
-		pages.append(tmp)
-	return pages
-
-def generate_div2_pages(regionList):
-	pages = []
-	for region in regionList:
-		tmp = 'Dota_Pro_Circuit/2021-22/1/' + region + '/Division_II'
-		pages.append(tmp)
+		if division == 1:
+			tmp = 'Dota_Pro_Circuit/2021-22/' + season + '/' + region + '/Division_I'
+			pages.append(tmp)
+		else: 
+			tmp = 'Dota_Pro_Circuit/2021-22/' + season + '/' + region + '/Division_II'
+			pages.append(tmp)
 	return pages
 
 def html_stripper(html):
@@ -39,8 +37,9 @@ def getScheduleFromBSObject(soupObj, region, div):
 	week = re.search(r'Week [0-9]', str(soupObj)).group(0)
 
 	# sort the teams out
-	tmp = soupObj.findAll("td", {"class":"matchlistslot"})
+	tmp = soupObj.findAll("div", {"class":"brkts-matchlist-cell brkts-matchlist-opponent brkts-opponent-hover"})
 	teamRaw = html_stripper(tmp)
+	# print(teamRaw)
 	teams = teamRaw.replace('[', '').replace(']', '').replace(' ', '').split(',')
 	# edit Alliance since they're saved as [A]
 	if (region == 'EU' and 'A' in teams):
@@ -69,10 +68,10 @@ def getScheduleFromBSObject(soupObj, region, div):
 
 # generate a map of string lists, with each week as the key and the map as its value
 
-def createCompleteScheduleForAUrl(inputUrl):
-
+def createCompleteScheduleForAUrl(inputUrl, season):
+	regString = '/' + str(season) + '/(.*)/Di'
 	print("Getting schedule from the following URL: " + inputUrl)
-	region = re.search(r'/1/(.*)/Di', inputUrl).group(1)
+	region = re.search(regString, inputUrl).group(1)
 	region = convertRegion(region)
 	print('Region: ' + region)
 	div = re.search(r'Division.*', inputUrl).group(0)
@@ -81,8 +80,9 @@ def createCompleteScheduleForAUrl(inputUrl):
 
 	output = {}
 	soup,url,cached = parse(inputUrl)
-	schedule = soup.findAll("table",{"class":"matchlist wikitable table table-bordered collapsible"})
-
+	# print(soup)
+	schedule = soup.findAll("div",{"class":"brkts-matchlist brkts-matchlist-collapsible"})
+	# print(schedule)
 	for week in schedule:
 		weeklySchedule = getScheduleFromBSObject(week, region, div)
 		output[weeklySchedule[0]] = weeklySchedule[1]
@@ -90,12 +90,12 @@ def createCompleteScheduleForAUrl(inputUrl):
 	return output, cached
 
 # now we do it for all regions, then we combine the maps to get one list for each week
-def createCompleteSchedule(urlList):
+def createCompleteSchedule(urlList, season):
 	output = {}
 
 	# collect individual schedules
 	for url in urlList:
-		tmp, isCached = createCompleteScheduleForAUrl(url)
+		tmp, isCached = createCompleteScheduleForAUrl(url, season)
 
 		# add values to dict
 		for week in tmp:
@@ -183,17 +183,17 @@ def convertDateTimeBackToNiceFormat(dateString):
 
 def calculateRegionTimeDiff(region):
 	if region == "SEA":
-		return 0
+		return 8
 	if region == "CN":
-		return 0
+		return 8
 	if region == "EU":
-		return 7
+		return 8
 	if region == "CIS":
 		return 7
 	if region == "NA":
-		return 16
+		return -16
 	if region == "SA":
-		return 16
+		return -16
 
 def html_stripper(html):
 	x = re.sub('<[^<]+?>', '', str(html)) #gotta coerce to string

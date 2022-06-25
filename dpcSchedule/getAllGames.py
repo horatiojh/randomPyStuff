@@ -6,31 +6,29 @@ from helpers import *
 # TODO: Add fixture if it's top of table teams (ranking-based)
 
 # Which week do we want to generate the schedule for 
-week = 5
+season = 3
+week = 4
+
 
 # filter teams we want to see
-div1Teams = ['OG', 'Secret', 'Alliance', 'Tundra', 'Liquid', 'NGX', 'VP', 'TSpirit', 'HR', 'EG', 'UND', 'QC', 'BOOM', 'Fnatic', 'MG.Trust', 'T1', 'SMG', 'IG', 'PSG.LGD', 'Aster', 'RNG', 'EHOME']
-div2Teams = ['Xtreme', 'Bald', 'CF', 'CIS-R', 'NGX.SEA', 'Ragdoll', 'Polaris']
+div1Teams = ['OG', 'Secret', 'Tundra', 'Liquid', 'EG', 'UND', 'QC', 'BOOM', 'Fnatic', 'T1', 'PSG.LGD', 'Aster', 'RNG', 'Xtreme', 'NAVI', 'TSpirit'] 
+div2Teams = ['NGX', 'Bald']
 
 # pages with dpc schedule
-regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_America','South_America']
+div1Regions = ['Western_Europe','Eastern_Europe','China','Southeast_Asia','North_America','South_America']
+div2Regions = ['Western_Europe','China','Southeast_Asia']
 
 # main code
-urlListDiv1 = generate_div1_pages(regions)
-urlListDiv2 = generate_div2_pages(regions)
+urlListDiv1 = generate_pages(1, div1Regions, season)
+urlListDiv2 = generate_pages(2, div2Regions, season)
 urlList = urlListDiv1 + urlListDiv2
 teams = div1Teams + div2Teams
 
-schedule = createCompleteSchedule(urlList)
-nonCNSchedule = getWeeklySchedule(schedule, week, teams)
-
-# for the chinese ones (now that the schedule is not balanced; it's 3 weeks behind)
-div1CNTeams = ['IG', 'PSG.LGD', 'Aster', 'RNG', 'EHOME']
-cnWeek = week - 3
-cnSchedule = getWeeklySchedule(schedule, cnWeek, div1CNTeams)
-totalSchedule = nonCNSchedule + cnSchedule
-
-printScheduleToTerminal(totalSchedule, week, True)
+schedule = createCompleteSchedule(urlList, season)
+# print(schedule)
+weeklySchedule = getWeeklySchedule(schedule, week, teams)
+# print(weeklySchedule)
+printScheduleToTerminal(weeklySchedule, week, True)
 
 
 
